@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Tutor — StudyBuddy AI</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
+  <style>
+    .tutor-layout { max-width: 900px; margin: 0 auto; padding: 3rem 1rem; }
+    .tutor-header { text-align: center; margin-bottom: 2rem; animation: fadeInDown 500ms ease both; }
+    .tutor-header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .tutor-header p { color: var(--text-2); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+    .result-card { margin-top: 2rem; animation: fadeInUp 600ms var(--ease-out) both; }
+    .result-section { margin-bottom: 1.5rem; }
+    .result-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; margin-bottom: 0.5rem; }
+    .result-text { line-height: 1.7; color: var(--text-1); }
+    .check-question { background: rgba(129, 140, 248, 0.1); border-left: 4px solid var(--accent-2); padding: 1rem; border-radius: 4px; margin-top: 0.5rem; font-style: italic; }
+    
+    /* Loading State */
+    .loading-state { text-align: center; padding: 4rem 0; animation: fadeIn 300ms ease both; }
+    .loading-state .loader { width: 40px; height: 40px; border-width: 3px; margin-bottom: 1rem; }
+    .loading-state p { color: var(--text-2); }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="brand"><span class="brand-mark">📚</span><span>Study<span>Buddy</span> AI</span></a>
+      <div class="nav-links">
+        <a href="/dashboard.html" class="nav-link">Dashboard</a>
+        <a href="/tutor.html" class="nav-link active">Tutor</a>
+        <a href="/flashcards.html" class="nav-link">Flashcards</a>
+        <a href="/quiz.html" class="nav-link">Quiz</a>
+        <a href="/plan.html" class="nav-link">Planner</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="tutor-layout">
+    <div class="tutor-header">
+      <h1>Ask <span class="gradient-text">anything</span></h1>
+      <p>Get a clear, level-appropriate explanation with examples.</p>
+    </div>
+
+    <!-- Form Container -->
+    <div id="formContainer" class="card card-pad">
+      <div id="alert" class="alert alert-error"></div>
+      <form id="tutorForm">
+        <div class="field">
+          <label>What do you want to learn about?</label>
+          <textarea id="question" class="input textarea" placeholder="e.g., How does photosynthesis work?" required></textarea>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Subject</label>
+            <input type="text" id="subject" class="input" placeholder="e.g., Biology" />
+          </div>
+          <div class="field">
+            <label>Grade Level</label>
+            <select id="gradeLevel" class="input">
+              <option value="secondary">Secondary</option>
+              <option value="highschool">High School</option>
+              <option value="university">University</option>
+              <option value="primary">Primary</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" style="width: 100%;">Explain it to me →</button>
+      </form>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading-state hidden">
+      <div class="loader"></div>
+      <p>StudyBuddy is thinking...</p>
+    </div>
+
+    <!-- Result Container -->
+    <div id="result" class="card card-pad result-card hidden">
+      <div class="result-section">
+        <div class="result-label">The Short Answer</div>
+        <div class="result-text" id="simpleAnswer" style="font-size: 1.2rem; font-weight: 500; color: var(--text-0);"></div>
+      </div>
+      <div class="result-section">
+        <div class="result-label">Detailed Explanation</div>
+        <div class="result-text" id="explanation"></div>
+      </div>
+      <div class="result-section">
+        <div class="result-label">Everyday Example</div>
+        <div class="result-text" id="example"></div>
+      </div>
+      <div class="result-section">
+        <div class="result-label">Common Mistake</div>
+        <div class="result-text" id="commonMistake"></div>
+      </div>
+      <div class="result-section">
+        <div class="result-label">Quick Check</div>
+        <div class="check-question" id="checkQuestion"></div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { api } from '/js/api.js';
+
+    const form = document.getElementById('tutorForm');
+    const formContainer = document.getElementById('formContainer');
+    const alertBox = document.getElementById('alert');
+    const loading = document.getElementById('loading');
+    const result = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // 1. Show loading, hide form
+      alertBox.className = 'alert';
+      formContainer.classList.add('hidden');
+      loading.classList.remove('hidden');
+      result.classList.add('hidden');
+
+      try {
+        const response = await api.post('/api/ai/explain', {
+          question: document.getElementById('question').value,
+          subject: document.getElementById('subject').value,
+          gradeLevel: document.getElementById('gradeLevel').value,
+        });
+
+        const data = response.data;
+        document.getElementById('simpleAnswer').textContent = data.simpleAnswer;
+        document.getElementById('explanation').textContent = data.explanation;
+        document.getElementById('example').textContent = data.example;
+        document.getElementById('commonMistake').textContent = data.commonMistake;
+        document.getElementById('checkQuestion').textContent = data.checkQuestion;
+
+        // 2. Hide loading, show result
+        loading.classList.add('hidden');
+        result.classList.remove('hidden');
+        result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+      } catch (err) {
+        // 3. Hide loading, show form and error
+        loading.classList.add('hidden');
+        formContainer.classList.remove('hidden');
+        alertBox.textContent = err.message;
+        alertBox.className = 'alert alert-error show';
+      }
+    });
+  </script>
+</body>
+</html>

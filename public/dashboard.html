@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — StudyBuddy AI</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
+  <style>
+    .dashboard-layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 65px); }
+    .sidebar { padding: 2rem 1rem; border-right: 1px solid var(--glass-border); background: rgba(6,9,18,0.3); }
+    .sidebar-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: var(--text-1); text-decoration: none; border-radius: var(--radius-sm); margin-bottom: 0.25rem; transition: background 0.2s ease, color 0.2s ease; }
+    .sidebar-link:hover, .sidebar-link.active { background: var(--bg-3); color: var(--accent); }
+    .main-content { padding: 2rem; }
+    .welcome-banner { margin-bottom: 2rem; animation: fadeIn 500ms ease both; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { padding: 1.5rem; animation: fadeIn 500ms ease both; }
+    .stat-value { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-label { font-size: 0.85rem; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.5rem; }
+    .actions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .action-card { display: block; padding: 1.5rem; text-decoration: none; color: var(--text-0); transition: transform 0.2s ease, border-color 0.2s ease; animation: fadeIn 500ms ease both; }
+    .action-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+    .action-icon { font-size: 1.5rem; margin-bottom: 1rem; }
+    .action-title { font-weight: 600; margin-bottom: 0.25rem; }
+    .action-desc { font-size: 0.85rem; color: var(--text-2); }
+    .recent-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .recent-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg-2); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); }
+    .recent-score { font-weight: 700; color: var(--success); background: rgba(52,211,153,0.1); padding: 0.25rem 0.75rem; border-radius: var(--radius-pill); }
+    @media (max-width: 768px) { .dashboard-layout { grid-template-columns: 1fr; } .sidebar { display: none; } }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="brand">
+        <span class="brand-mark" aria-hidden="true">📚</span>
+        <span>Study<span>Buddy</span> AI</span>
+      </a>
+      <div class="nav-links">
+        <a href="/dashboard.html" class="nav-link">Dashboard</a>
+        <a href="/tutor.html" class="nav-link">Tutor</a>
+        <a href="/flashcards.html" class="nav-link">Flashcards</a>
+        <a href="/quiz.html" class="nav-link">Quiz</a>
+        <a href="/plan.html" class="nav-link">Planner</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <a href="/dashboard.html" class="sidebar-link active"><span style="font-size:1.1rem">◧</span> Overview</a>
+      <a href="/tutor.html" class="sidebar-link"><span style="font-size:1.1rem">💡</span> AI Tutor</a>
+      <a href="/flashcards.html" class="sidebar-link"><span style="font-size:1.1rem">🃏</span> Flashcards</a>
+      <a href="/quiz.html" class="sidebar-link"><span style="font-size:1.1rem">📝</span> Quizzes</a>
+      <a href="/plan.html" class="sidebar-link"><span style="font-size:1.1rem">📅</span> Study Plan</a>
+    </aside>
+
+    <main class="main-content">
+      <div class="welcome-banner">
+        <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">Welcome back 👋</h1>
+        <p class="text-muted">Here is your learning snapshot.</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="card stat-card">
+          <div class="stat-value" id="statFlashcards">—</div>
+          <div class="stat-label">Flashcard Sets</div>
+        </div>
+        <div class="card stat-card" style="animation-delay: 100ms;">
+          <div class="stat-value" id="statQuizzes">—</div>
+          <div class="stat-label">Quizzes Taken</div>
+        </div>
+        <div class="card stat-card" style="animation-delay: 200ms;">
+          <div class="stat-value" id="statScore">—</div>
+          <div class="stat-label">Avg. Score</div>
+        </div>
+      </div>
+
+      <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">Quick Actions</h2>
+      <div class="actions-grid">
+        <a href="/tutor.html" class="card action-card" style="animation-delay: 300ms;">
+          <div class="action-icon">💡</div>
+          <div class="action-title">Ask a question</div>
+          <div class="action-desc">Get an instant explanation.</div>
+        </a>
+        <a href="/flashcards.html" class="card action-card" style="animation-delay: 350ms;">
+          <div class="action-icon">🃏</div>
+          <div class="action-title">Make flashcards</div>
+          <div class="action-desc">Turn notes into study cards.</div>
+        </a>
+        <a href="/quiz.html" class="card action-card" style="animation-delay: 400ms;">
+          <div class="action-icon">📝</div>
+          <div class="action-title">Take a quiz</div>
+          <div class="action-desc">Test your knowledge.</div>
+        </a>
+        <a href="/plan.html" class="card action-card" style="animation-delay: 450ms;">
+          <div class="action-icon">📅</div>
+          <div class="action-title">Study plan</div>
+          <div class="action-desc">Prepare for an upcoming exam.</div>
+        </a>
+      </div>
+
+      <div class="card card-pad" style="animation: fadeIn 500ms ease both; animation-delay: 500ms;">
+        <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">Recent Quizzes</h2>
+        <div id="recentQuizzes" class="recent-list">
+          <p class="text-muted text-sm">Loading...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { api } from '/js/api.js';
+
+    async function loadSummary() {
+      try {
+        const { data } = await api.get('/api/progress/summary');
+        document.getElementById('statFlashcards').textContent = data.flashcardSets;
+        document.getElementById('statQuizzes').textContent = data.quizzesTaken;
+        document.getElementById('statScore').textContent = data.averageScore + '%';
+
+        const list = document.getElementById('recentQuizzes');
+        if (data.recentQuizzes && data.recentQuizzes.length > 0) {
+          list.innerHTML = data.recentQuizzes.map(q => `
+            <div class="recent-item">
+              <div>
+                <div style="font-weight: 500;">${q.title}</div>
+                <div class="text-muted text-sm">${q.topic} · ${new Date(q.createdAt).toLocaleDateString()}</div>
+              </div>
+              <div class="recent-score">${q.score}/${q.totalQuestions}</div>
+            </div>
+          `).join('');
+        } else {
+          list.innerHTML = '<p class="text-muted text-sm">No quizzes taken yet. Take one to see your scores!</p>';
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadSummary();
+  </script>
+</body>
+</html>

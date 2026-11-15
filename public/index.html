@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyBuddy AI — Learn smarter, not harder</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
+  <style>
+    /* ─── Page-specific Animations & Layout ───────────────── */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
+      animation: gridPan 20s linear infinite;
+    }
+    @keyframes gridPan {
+      0% { background-position: 0 0; }
+      100% { background-position: 50px 50px; }
+    }
+    .hero {
+      padding: 7rem 0 5rem;
+      text-align: center;
+      position: relative;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      background: rgba(34, 211, 238, 0.1);
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      animation: fadeInDown 800ms var(--ease-out) both;
+    }
+    .hero-badge .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+      animation: pulse 2s infinite;
+    }
+    .hero h1 {
+      font-size: clamp(2.8rem, 6vw, 4.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 800ms var(--ease-out) 100ms both;
+    }
+    .hero p {
+      color: var(--text-2);
+      font-size: clamp(1.1rem, 2vw, 1.25rem);
+      max-width: 680px;
+      margin: 0 auto 3rem;
+      animation: fadeInUp 800ms var(--ease-out) 200ms both;
+    }
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeInUp 800ms var(--ease-out) 300ms both;
+    }
+    .mockup-container {
+      position: relative;
+      max-width: 1000px;
+      margin: 0 auto;
+      perspective: 1000px;
+      animation: fadeInUp 1000ms var(--ease-out) 400ms both;
+    }
+    .mockup {
+      background: var(--bg-1);
+      border-radius: 16px;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 100px rgba(34, 211, 238, 0.1);
+      overflow: hidden;
+      transform: rotateX(5deg);
+      transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out);
+    }
+    .mockup:hover {
+      transform: rotateX(0deg) translateY(-5px);
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6), 0 0 120px rgba(34, 211, 238, 0.15);
+    }
+    .mockup-header {
+      padding: 0.75rem 1rem;
+      background: rgba(6, 9, 18, 0.8);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      gap: 0.5rem;
+    }
+    .mockup-dot { width: 11px; height: 11px; border-radius: 50%; }
+    .mockup-body { padding: 2rem; display: grid; gap: 1.5rem; }
+    .mockup-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .mockup-stat { padding: 1.25rem; background: var(--bg-2); border-radius: 12px; border: 1px solid var(--glass-border); }
+    .mockup-stat .val { font-size: 1.8rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .mockup-stat .lbl { font-size: 0.75rem; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.05em; }
+    .mockup-chart { height: 160px; display: flex; align-items: flex-end; gap: 1rem; padding: 1rem; background: var(--bg-2); border-radius: 12px; border: 1px solid var(--glass-border); }
+    .mockup-bar {
+      flex: 1; background: linear-gradient(to top, var(--accent), var(--accent-2));
+      border-radius: 4px 4px 0 0; animation: growBar 1.5s var(--ease-out) forwards;
+      transform-origin: bottom; opacity: 0;
+    }
+    .mockup-bar:nth-child(1) { height: 40%; animation-delay: 800ms; }
+    .mockup-bar:nth-child(2) { height: 65%; animation-delay: 900ms; }
+    .mockup-bar:nth-child(3) { height: 50%; animation-delay: 1000ms; }
+    .mockup-bar:nth-child(4) { height: 80%; animation-delay: 1100ms; }
+    .mockup-bar:nth-child(5) { height: 72%; animation-delay: 1200ms; }
+    .mockup-bar:nth-child(6) { height: 90%; animation-delay: 1300ms; }
+    .mockup-bar:nth-child(7) { height: 84%; animation-delay: 1400ms; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; padding: 6rem 0; }
+    .feature { padding: 2rem; transition: transform 0.4s var(--ease-out), border-color 0.4s ease, box-shadow 0.4s ease; position: relative; overflow: hidden; }
+    .feature::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top right, rgba(34,211,238,0.1), transparent 60%); opacity: 0; transition: opacity 0.4s ease; pointer-events: none; }
+    .feature:hover { transform: translateY(-8px); border-color: rgba(34, 211, 238, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+    .feature:hover::before { opacity: 1; }
+    .feature-icon { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 14px; background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.2); font-size: 1.6rem; margin-bottom: 1.5rem; transition: transform 0.4s var(--ease-out); }
+    .feature:hover .feature-icon { transform: scale(1.1) rotate(-5deg); }
+    .feature h3 { font-size: 1.25rem; margin-bottom: 0.75rem; }
+    .feature p { color: var(--text-2); font-size: 0.95rem; line-height: 1.6; }
+    .steps-section { padding: 4rem 0 6rem; }
+    .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 2rem; }
+    .step { text-align: center; position: relative; padding: 1rem; }
+    .step-number { width: 48px; height: 48px; display: grid; place-items: center; margin: 0 auto 1.5rem; border-radius: 50%; background: var(--bg-2); border: 2px solid var(--accent); color: var(--accent); font-weight: 800; font-size: 1.2rem; box-shadow: 0 0 20px rgba(34, 211, 238, 0.2); position: relative; z-index: 2; }
+    .step::after { content: ''; position: absolute; top: 2.5rem; left: 50%; width: 100%; height: 2px; background: linear-gradient(90deg, var(--accent), transparent); z-index: 1; opacity: 0.3; }
+    .step:last-child::after { display: none; }
+    .step h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .step p { color: var(--text-2); font-size: 0.9rem; }
+    .cta-section { padding: 0 0 6rem; }
+    .cta-box { text-align: center; padding: 4rem 2rem; background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(129, 140, 248, 0.1)); border: 1px solid rgba(129, 140, 248, 0.3); border-radius: var(--radius-lg); position: relative; overflow: hidden; animation: fadeIn 1000ms ease both; }
+    .cta-box::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%); animation: rotate 20s linear infinite; }
+    .cta-box h2 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 1rem; position: relative; }
+    .cta-box p { color: var(--text-2); max-width: 500px; margin: 0 auto 2.5rem; position: relative; }
+    .cta-box .btn { position: relative; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.9); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes growBar { from { height: 0 !important; opacity: 0; } to { opacity: 1; } }
+    @keyframes rotate { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-grid"></div>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="brand">
+        <span class="brand-mark" aria-hidden="true">📚</span>
+        <span>Study<span>Buddy</span> AI</span>
+      </a>
+      <div class="nav-links">
+        <a href="/dashboard.html" class="btn btn-primary btn-sm">Launch App →</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero container">
+      <div class="hero-badge">
+        <span class="dot"></span> Powered by Google Gemini
+      </div>
+      <h1>Your personal <span class="gradient-text">AI tutor</span><br/>free, fast, and built for you.</h1>
+      <p>Understand any topic, turn notes into flashcards, generate quizzes, and build a study plan — all with real AI, in seconds.</p>
+      <div class="hero-cta">
+        <a href="/dashboard.html" class="btn btn-primary btn-lg">Start Learning →</a>
+        <a href="/tutor.html" class="btn btn-ghost btn-lg">Try the AI Tutor</a>
+      </div>
+    </section>
+
+    <div class="container">
+      <div class="mockup-container">
+        <div class="mockup">
+          <div class="mockup-header">
+            <div class="mockup-dot" style="background:#ff5f57"></div>
+            <div class="mockup-dot" style="background:#febc2e"></div>
+            <div class="mockup-dot" style="background:#28c840"></div>
+          </div>
+          <div class="mockup-body">
+            <div class="mockup-stats">
+              <div class="mockup-stat"><div class="val">12</div><div class="lbl">Flashcard sets</div></div>
+              <div class="mockup-stat"><div class="val">8</div><div class="lbl">Quizzes taken</div></div>
+              <div class="mockup-stat"><div class="val">87%</div><div class="lbl">Avg. score</div></div>
+            </div>
+            <div class="mockup-chart">
+              <div class="mockup-bar"></div>
+              <div class="mockup-bar"></div>
+              <div class="mockup-bar"></div>
+              <div class="mockup-bar"></div>
+              <div class="mockup-bar"></div>
+              <div class="mockup-bar"></div>
+              <div class="mockup-bar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="container">
+      <div class="features-grid">
+        <article class="card feature">
+          <div class="feature-icon">💡</div>
+          <h3>Explain anything</h3>
+          <p>Get clear, level-appropriate explanations with examples, common mistakes, and a check-question.</p>
+        </article>
+        <article class="card feature">
+          <div class="feature-icon">🃏</div>
+          <h3>Notes → flashcards</h3>
+          <p>Paste your study notes and instantly get a ready-to-review flashcard set with difficulty ratings.</p>
+        </article>
+        <article class="card feature">
+          <div class="feature-icon">📝</div>
+          <h3>Quiz yourself</h3>
+          <p>Generate a multiple-choice quiz on any topic and get instant, explained scores.</p>
+        </article>
+        <article class="card feature">
+          <div class="feature-icon">📅</div>
+          <h3>Smart study plans</h3>
+          <p>Tell it your exam date and weak topics — get a realistic daily schedule that avoids burnout.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="steps-section container">
+      <div style="text-align: center; margin-bottom: 4rem;">
+        <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">How it works</h2>
+        <p class="text-muted">Three steps from stuck to unstoppable.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Ask or paste</h3>
+          <p>Type a question, paste notes, or name a topic.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>AI does the work</h3>
+          <p>Gemini generates flashcards, quizzes, or explanations.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Study smarter</h3>
+          <p>Review flashcards, take quizzes, and track progress.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section container">
+      <div class="cta-box">
+        <h2>Ready to <span class="gradient-text">learn smarter</span>?</h2>
+        <p>Join students using StudyBuddy AI to understand more in less time.</p>
+        <a href="/dashboard.html" class="btn btn-primary btn-lg">Get started free →</a>
+      </div>
+    </section>
+  </main>
+
+  <footer style="border-top: 1px solid var(--glass-border); padding: 2rem 0; text-align: center; color: var(--text-2); font-size: 0.85rem;">
+    <div class="container">
+      <p>© 2026 StudyBuddy AI · Built with Node.js, Express, MongoDB, and Google Gemini · Free &amp; open source</p>
+    </div>
+  </footer>
+
+</body>
+</html>

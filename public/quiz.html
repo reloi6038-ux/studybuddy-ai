@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz — StudyBuddy AI</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
+  <style>
+    .quiz-layout { max-width: 800px; margin: 0 auto; padding: 3rem 1rem; }
+    .quiz-header { text-align: center; margin-bottom: 2rem; animation: fadeInDown 500ms ease both; }
+    .quiz-header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .question-card { margin-bottom: 1.5rem; animation: fadeInUp 500ms ease both; }
+    .question-text { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
+    .options-grid { display: grid; gap: 0.75rem; }
+    .option-label { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--bg-2); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s ease; }
+    .option-label:hover { background: var(--bg-3); border-color: var(--glass-hi); }
+    .option-label input { display: none; }
+    .option-label.selected { border-color: var(--accent); background: rgba(34, 211, 238, 0.1); }
+    .score-banner { text-align: center; padding: 3rem 1rem; margin-top: 2rem; background: linear-gradient(135deg, rgba(52, 211, 153, 0.1), rgba(34, 211, 238, 0.1)); border: 1px solid var(--success); border-radius: var(--radius-lg); animation: fadeInUp 600ms ease both; }
+    .score-banner h2 { font-size: 3rem; color: var(--success); margin-bottom: 0.5rem; }
+    .score-banner p { color: var(--text-1); font-size: 1.1rem; margin-bottom: 1.5rem; }
+    .loading-state { text-align: center; padding: 4rem 0; }
+    .loading-state .loader { width: 40px; height: 40px; border-width: 3px; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="brand"><span class="brand-mark">📚</span><span>Study<span>Buddy</span> AI</span></a>
+      <div class="nav-links">
+        <a href="/dashboard.html" class="nav-link">Dashboard</a>
+        <a href="/tutor.html" class="nav-link">Tutor</a>
+        <a href="/flashcards.html" class="nav-link">Flashcards</a>
+        <a href="/quiz.html" class="nav-link active">Quiz</a>
+        <a href="/plan.html" class="nav-link">Planner</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="quiz-layout">
+    <div id="setupView">
+      <div class="quiz-header">
+        <h1>Test your <span class="gradient-text">knowledge</span></h1>
+        <p>Generate a quiz on any topic.</p>
+      </div>
+      <div class="card card-pad">
+        <div id="alert" class="alert alert-error"></div>
+        <form id="quizForm">
+          <div class="field">
+            <label>Topic</label>
+            <input type="text" id="topic" class="input" placeholder="e.g., Basic Algebra" required />
+          </div>
+          <div class="field">
+            <label>Number of questions</label>
+            <select id="count" class="input">
+              <option value="3">3 questions</option>
+              <option value="5" selected>5 questions</option>
+              <option value="10">10 questions</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" style="width: 100%;">Generate Quiz →</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="loading" class="loading-state hidden">
+      <div class="loader"></div>
+      <p>Writing your quiz...</p>
+    </div>
+
+    <div id="quizView" class="hidden">
+      <div class="quiz-header">
+        <h2 id="quizTitle" style="font-size: 1.8rem;">Quiz Title</h2>
+        <p class="text-muted">Select one answer per question.</p>
+      </div>
+      <form id="quizSubmitForm">
+        <div id="questionsContainer"></div>
+        <button type="submit" class="btn btn-primary btn-lg" id="finishBtn" style="width: 100%;">Submit Answers →</button>
+      </form>
+    </div>
+
+    <div id="resultView" class="hidden">
+      <div class="score-banner">
+        <h2 id="scorePercent">0%</h2>
+        <p id="scoreText">You scored 0 out of 0</p>
+        <button class="btn btn-primary" onclick="window.location.reload()">Take another quiz</button>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { api } from '/js/api.js';
+
+    let currentQuizId = null;
+    let quizData = null;
+
+    const quizForm = document.getElementById('quizForm');
+    const quizView = document.getElementById('quizView');
+    const resultView = document.getElementById('resultView');
+    const loading = document.getElementById('loading');
+    const setupView = document.getElementById('setupView');
+    const questionsContainer = document.getElementById('questionsContainer');
+
+    quizForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      document.getElementById('alert').className = 'alert';
+      setupView.classList.add('hidden');
+      loading.classList.remove('hidden');
+
+      try {
+        const response = await api.post('/api/ai/quiz', {
+          topic: document.getElementById('topic').value,
+          questionCount: parseInt(document.getElementById('count').value),
+        });
+
+        quizData = response.data;
+        currentQuizId = response.data.id;
+        document.getElementById('quizTitle').textContent = quizData.title;
+
+        questionsContainer.innerHTML = quizData.questions.map((q, i) => `
+          <div class="card card-pad question-card" style="animation-delay: ${i * 100}ms;">
+            <div class="question-text">${i + 1}. ${q.question}</div>
+            <div class="options-grid">
+              ${q.options.map((opt, oi) => `
+                <label class="option-label" onclick="this.parentElement.querySelectorAll('.option-label').forEach(el => el.classList.remove('selected')); this.classList.add('selected');">
+                  <input type="radio" name="q${i}" value="${oi}" required />
+                  <span>${opt}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `).join('');
+
+        loading.classList.add('hidden');
+        quizView.classList.remove('hidden');
+      } catch (err) {
+        loading.classList.add('hidden');
+        setupView.classList.remove('hidden');
+        document.getElementById('alert').textContent = err.message;
+        document.getElementById('alert').className = 'alert alert-error show';
+      }
+    });
+
+    document.getElementById('quizSubmitForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const answers = quizData.questions.map((_, i) => parseInt(formData.get(`q${i}`)));
+
+      document.getElementById('finishBtn').disabled = true;
+      document.getElementById('finishBtn').innerHTML = '<span class="loader"></span> Scoring...';
+
+      try {
+        const response = await api.patch(`/api/progress/quiz/${currentQuizId}/submit`, { answers });
+        quizView.classList.add('hidden');
+        resultView.classList.remove('hidden');
+        document.getElementById('scorePercent').textContent = response.data.percentage + '%';
+        document.getElementById('scoreText').textContent = `You scored ${response.data.score} out of ${response.data.totalQuestions}`;
+      } catch (err) {
+        alert(err.message);
+        document.getElementById('finishBtn').disabled = false;
+        document.getElementById('finishBtn').textContent = 'Submit Answers →';
+      }
+    });
+  </script>
+</body>
+</html>

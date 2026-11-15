@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flashcards — StudyBuddy AI</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
+  <style>
+    .flash-layout { max-width: 900px; margin: 0 auto; padding: 3rem 1rem; }
+    .flash-header { text-align: center; margin-bottom: 2rem; animation: fadeInDown 500ms ease both; }
+    .flash-header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .flash-header p { color: var(--text-2); }
+    .deck-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+    .flashcard { perspective: 1000px; height: 220px; cursor: pointer; }
+    .flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s var(--ease-out); transform-style: preserve-3d; }
+    .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+    .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--glass-border); }
+    .flashcard-front { background: var(--bg-2); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .flashcard-back { background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(129, 140, 248, 0.1)); border-color: var(--accent-2); transform: rotateY(180deg); }
+    .card-difficulty { position: absolute; top: 1rem; left: 1rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 0.2rem 0.6rem; border-radius: 999px; letter-spacing: 0.05em; }
+    .diff-easy { background: rgba(52, 211, 153, 0.2); color: var(--success); }
+    .diff-medium { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+    .diff-hard { background: rgba(248, 113, 113, 0.2); color: var(--danger); }
+    .flashcard-front h3 { font-size: 1.1rem; font-weight: 600; line-height: 1.4; }
+    .flashcard-back p { color: var(--text-0); font-size: 0.95rem; line-height: 1.5; }
+    .flip-hint { position: absolute; bottom: 1rem; font-size: 0.75rem; color: var(--text-3); }
+    .loading-state { text-align: center; padding: 4rem 0; }
+    .loading-state .loader { width: 40px; height: 40px; border-width: 3px; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="brand"><span class="brand-mark">📚</span><span>Study<span>Buddy</span> AI</span></a>
+      <div class="nav-links">
+        <a href="/dashboard.html" class="nav-link">Dashboard</a>
+        <a href="/tutor.html" class="nav-link">Tutor</a>
+        <a href="/flashcards.html" class="nav-link active">Flashcards</a>
+        <a href="/quiz.html" class="nav-link">Quiz</a>
+        <a href="/plan.html" class="nav-link">Planner</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flash-layout">
+    <div class="flash-header">
+      <h1>Notes to <span class="gradient-text">Flashcards</span></h1>
+      <p>Paste your study notes and get an instant review deck.</p>
+    </div>
+
+    <div class="card card-pad">
+      <div id="alert" class="alert alert-error"></div>
+      <form id="flashForm">
+        <div class="field">
+          <label>Paste your notes</label>
+          <textarea id="notes" class="input textarea" placeholder="Paste at least a paragraph of notes here..." required></textarea>
+        </div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div class="field" style="margin:0;">
+            <label>Subject</label>
+            <input type="text" id="subject" class="input" placeholder="e.g., History" />
+          </div>
+          <div class="field" style="margin:0;">
+            <label>Number of cards</label>
+            <input type="number" id="count" class="input" value="6" min="5" max="15" />
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" style="width: 100%;">Generate Flashcards →</button>
+      </form>
+    </div>
+
+    <div id="loading" class="loading-state hidden">
+      <div class="loader"></div>
+      <p>Creating your flashcards...</p>
+    </div>
+
+    <div id="result" class="hidden">
+      <div class="flex-between" style="margin-top: 2rem; margin-bottom: 1rem;">
+        <h2 style="font-size: 1.25rem;">Your Deck</h2>
+        <span class="text-muted text-sm">Click a card to flip</span>
+      </div>
+      <div id="deck" class="deck-grid"></div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { api } from '/js/api.js';
+
+    const form = document.getElementById('flashForm');
+    const alertBox = document.getElementById('alert');
+    const loading = document.getElementById('loading');
+    const result = document.getElementById('result');
+    const deck = document.getElementById('deck');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      alertBox.className = 'alert';
+      form.parentElement.classList.add('hidden');
+      loading.classList.remove('hidden');
+      result.classList.add('hidden');
+
+      try {
+        const response = await api.post('/api/ai/flashcards', {
+          notes: document.getElementById('notes').value,
+          subject: document.getElementById('subject').value,
+          count: parseInt(document.getElementById('count').value),
+        });
+
+        deck.innerHTML = response.data.cards.map(card => `
+          <div class="flashcard" onclick="this.classList.toggle('flipped')">
+            <div class="flashcard-inner">
+              <div class="flashcard-front">
+                <span class="card-difficulty diff-${card.difficulty}">${card.difficulty}</span>
+                <h3>${card.front}</h3>
+                <span class="flip-hint">Click to reveal</span>
+              </div>
+              <div class="flashcard-back">
+                <p>${card.back}</p>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        loading.classList.add('hidden');
+        result.classList.remove('hidden');
+      } catch (err) {
+        loading.classList.add('hidden');
+        form.parentElement.classList.remove('hidden');
+        alertBox.textContent = err.message;
+        alertBox.className = 'alert alert-error show';
+      }
+    });
+  </script>
+</body>
+</html>
