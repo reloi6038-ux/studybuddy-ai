@@ -39,6 +39,8 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   position: relative;
+  width: 100%;
+  max-width: 100vw;
 }
 
 /* Animated aurora backdrop */
@@ -60,7 +62,14 @@ body::before {
 }
 
 /* ─── Layout ────────────────────────────────────────── */
-.container { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 clamp(1rem, 3vw, 2rem); }
+.container { 
+  width: 100%; 
+  max-width: 1180px; 
+  margin: 0 auto; 
+  padding: 0 clamp(1rem, 3vw, 2rem); 
+  box-sizing: border-box; 
+  overflow-x: hidden;
+}
 
 /* ─── Navbar ────────────────────────────────────────── */
 .nav {
@@ -157,7 +166,7 @@ h1, h2, h3, h4 { line-height: 1.2; letter-spacing: -0.02em; color: var(--text-0)
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
 }
 
-/* ─── Animations (Additive — page renders without them) ─── */
+/* ─── Animations (Additive) ─────────────────────────── */
 .fade-in {
   animation: fadeIn 700ms var(--ease-out) both;
 }
@@ -166,10 +175,24 @@ h1, h2, h3, h4 { line-height: 1.2; letter-spacing: -0.02em; color: var(--text-0)
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ─── Utilities ─────────────────────────────────────── */
+.hidden { display: none !important; }
+
+/* ─── Mobile Responsiveness Fixes ───────────────────── */
+@media (max-width: 480px) {
+  .nav-inner {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+  .nav-links {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* ─── Reduced motion ────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   body::before { animation: none; }
 }
-
-.hidden { display: none !important; }

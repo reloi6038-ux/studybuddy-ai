@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/main.css" />
+  
   <style>
     /* ─── Page-specific Animations & Layout ───────────────── */
     .bg-grid {
@@ -27,8 +28,9 @@
       0% { background-position: 0 0; }
       100% { background-position: 50px 50px; }
     }
+
     .hero {
-      padding: 7rem 0 5rem;
+      padding: clamp(4rem, 8vw, 7rem) 0 clamp(3rem, 6vw, 5rem);
       text-align: center;
       position: relative;
     }
@@ -52,19 +54,22 @@
       box-shadow: 0 0 10px var(--accent);
       animation: pulse 2s infinite;
     }
+    
+    /* Adjusted font clamp for better mobile scaling */
     .hero h1 {
-      font-size: clamp(2.8rem, 6vw, 4.8rem);
+      font-size: clamp(2.2rem, 6vw, 4.8rem);
       font-weight: 800;
-      line-height: 1.1;
+      line-height: 1.15;
       letter-spacing: -0.03em;
       margin-bottom: 1.5rem;
       animation: fadeInUp 800ms var(--ease-out) 100ms both;
     }
     .hero p {
       color: var(--text-2);
-      font-size: clamp(1.1rem, 2vw, 1.25rem);
+      font-size: clamp(1rem, 2vw, 1.25rem);
       max-width: 680px;
       margin: 0 auto 3rem;
+      padding: 0 1rem;
       animation: fadeInUp 800ms var(--ease-out) 200ms both;
     }
     .hero-cta {
@@ -73,13 +78,16 @@
       justify-content: center;
       flex-wrap: wrap;
       animation: fadeInUp 800ms var(--ease-out) 300ms both;
+      padding: 0 1rem;
     }
+    
     .mockup-container {
       position: relative;
       max-width: 1000px;
       margin: 0 auto;
       perspective: 1000px;
       animation: fadeInUp 1000ms var(--ease-out) 400ms both;
+      padding: 0 1rem;
     }
     .mockup {
       background: var(--bg-1);
@@ -102,12 +110,19 @@
       gap: 0.5rem;
     }
     .mockup-dot { width: 11px; height: 11px; border-radius: 50%; }
-    .mockup-body { padding: 2rem; display: grid; gap: 1.5rem; }
-    .mockup-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-    .mockup-stat { padding: 1.25rem; background: var(--bg-2); border-radius: 12px; border: 1px solid var(--glass-border); }
-    .mockup-stat .val { font-size: 1.8rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .mockup-stat .lbl { font-size: 0.75rem; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.05em; }
-    .mockup-chart { height: 160px; display: flex; align-items: flex-end; gap: 1rem; padding: 1rem; background: var(--bg-2); border-radius: 12px; border: 1px solid var(--glass-border); }
+    .mockup-body { padding: clamp(1rem, 3vw, 2rem); display: grid; gap: 1.5rem; }
+    
+    /* Adjusted mockup stats to stack on mobile */
+    .mockup-stats { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); 
+      gap: 1rem; 
+    }
+    .mockup-stat { padding: 1rem; background: var(--bg-2); border-radius: 12px; border: 1px solid var(--glass-border); }
+    .mockup-stat .val { font-size: clamp(1.2rem, 3vw, 1.8rem); font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .mockup-stat .lbl { font-size: 0.7rem; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    .mockup-chart { height: 160px; display: flex; align-items: flex-end; gap: 0.5rem; padding: 1rem; background: var(--bg-2); border-radius: 12px; border: 1px solid var(--glass-border); }
     .mockup-bar {
       flex: 1; background: linear-gradient(to top, var(--accent), var(--accent-2));
       border-radius: 4px 4px 0 0; animation: growBar 1.5s var(--ease-out) forwards;
@@ -120,8 +135,9 @@
     .mockup-bar:nth-child(5) { height: 72%; animation-delay: 1200ms; }
     .mockup-bar:nth-child(6) { height: 90%; animation-delay: 1300ms; }
     .mockup-bar:nth-child(7) { height: 84%; animation-delay: 1400ms; }
-    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; padding: 6rem 0; }
-    .feature { padding: 2rem; transition: transform 0.4s var(--ease-out), border-color 0.4s ease, box-shadow 0.4s ease; position: relative; overflow: hidden; }
+
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; padding: clamp(3rem, 8vw, 6rem) 0; }
+    .feature { padding: clamp(1.5rem, 4vw, 2rem); transition: transform 0.4s var(--ease-out), border-color 0.4s ease, box-shadow 0.4s ease; position: relative; overflow: hidden; }
     .feature::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top right, rgba(34,211,238,0.1), transparent 60%); opacity: 0; transition: opacity 0.4s ease; pointer-events: none; }
     .feature:hover { transform: translateY(-8px); border-color: rgba(34, 211, 238, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
     .feature:hover::before { opacity: 1; }
@@ -129,6 +145,7 @@
     .feature:hover .feature-icon { transform: scale(1.1) rotate(-5deg); }
     .feature h3 { font-size: 1.25rem; margin-bottom: 0.75rem; }
     .feature p { color: var(--text-2); font-size: 0.95rem; line-height: 1.6; }
+
     .steps-section { padding: 4rem 0 6rem; }
     .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 2rem; }
     .step { text-align: center; position: relative; padding: 1rem; }
@@ -137,18 +154,21 @@
     .step:last-child::after { display: none; }
     .step h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
     .step p { color: var(--text-2); font-size: 0.9rem; }
+
     .cta-section { padding: 0 0 6rem; }
-    .cta-box { text-align: center; padding: 4rem 2rem; background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(129, 140, 248, 0.1)); border: 1px solid rgba(129, 140, 248, 0.3); border-radius: var(--radius-lg); position: relative; overflow: hidden; animation: fadeIn 1000ms ease both; }
+    .cta-box { text-align: center; padding: clamp(2rem, 6vw, 4rem) clamp(1rem, 4vw, 2rem); background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(129, 140, 248, 0.1)); border: 1px solid rgba(129, 140, 248, 0.3); border-radius: var(--radius-lg); position: relative; overflow: hidden; animation: fadeIn 1000ms ease both; }
     .cta-box::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%); animation: rotate 20s linear infinite; }
-    .cta-box h2 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 1rem; position: relative; }
-    .cta-box p { color: var(--text-2); max-width: 500px; margin: 0 auto 2.5rem; position: relative; }
+    .cta-box h2 { font-size: clamp(1.8rem, 4vw, 3rem); margin-bottom: 1rem; position: relative; }
+    .cta-box p { color: var(--text-2); max-width: 500px; margin: 0 auto 2.5rem; position: relative; font-size: clamp(0.95rem, 2vw, 1.1rem); }
     .cta-box .btn { position: relative; }
+
     @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.9); } }
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes growBar { from { height: 0 !important; opacity: 0; } to { opacity: 1; } }
     @keyframes rotate { to { transform: rotate(360deg); } }
+
     @media (prefers-reduced-motion: reduce) {
       * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
@@ -175,7 +195,7 @@
       <div class="hero-badge">
         <span class="dot"></span> Powered by Google Gemini
       </div>
-      <h1>Your personal <span class="gradient-text">AI tutor</span><br/>free, fast, and built for you.</h1>
+      <h1>Your personal <span class="gradient-text">AI tutor</span><br>free, fast, and built for you.</h1>
       <p>Understand any topic, turn notes into flashcards, generate quizzes, and build a study plan — all with real AI, in seconds.</p>
       <div class="hero-cta">
         <a href="/dashboard.html" class="btn btn-primary btn-lg">Start Learning →</a>
@@ -271,7 +291,7 @@
 
   <footer style="border-top: 1px solid var(--glass-border); padding: 2rem 0; text-align: center; color: var(--text-2); font-size: 0.85rem;">
     <div class="container">
-      <p>© 2026 StudyBuddy AI · Built with Node.js, Express, MongoDB, and Google Gemini · Free &amp; open source</p>
+      <p style="padding: 0 1rem;">© 2026 StudyBuddy AI · Built with Node.js, Express, MongoDB, and Google Gemini · Free &amp; open source</p>
     </div>
   </footer>
 
