@@ -3,6 +3,7 @@ const FlashcardSet = require('../models/FlashcardSet');
 const QuizResult = require('../models/QuizResult');
 const StudyPlan = require('../models/StudyPlan');
 
+// GET /api/progress/summary
 const getSummary = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
@@ -38,27 +39,34 @@ const getSummary = asyncHandler(async (req, res) => {
   });
 });
 
+// GET /api/progress/flashcards
 const getFlashcardSets = asyncHandler(async (req, res) => {
   const sets = await FlashcardSet.find({ user: req.user._id })
     .sort({ createdAt: -1 })
     .select('title subject cards modelUsed createdAt');
+
   res.status(200).json({ status: 'success', data: sets });
 });
 
+// GET /api/progress/quizzes
 const getQuizResults = asyncHandler(async (req, res) => {
   const quizzes = await QuizResult.find({ user: req.user._id })
     .sort({ createdAt: -1 })
     .select('title topic score totalQuestions completed createdAt');
+
   res.status(200).json({ status: 'success', data: quizzes });
 });
 
+// GET /api/progress/plans
 const getStudyPlans = asyncHandler(async (req, res) => {
   const plans = await StudyPlan.find({ user: req.user._id })
     .sort({ createdAt: -1 })
     .select('planTitle subjects totalDays createdAt');
+
   res.status(200).json({ status: 'success', data: plans });
 });
 
+// PATCH /api/progress/quiz/:id/submit
 const submitQuiz = asyncHandler(async (req, res) => {
   const { answers } = req.body;
 
@@ -98,6 +106,14 @@ const submitQuiz = asyncHandler(async (req, res) => {
       score,
       totalQuestions: quiz.questions.length,
       percentage: Math.round((score / quiz.questions.length) * 100),
+      review: quiz.questions.map((q, index) => ({
+        question: q.question,
+        options: q.options,
+        correctIndex: q.correctIndex,
+        userAnswer: answers[index],
+        explanation: q.explanation,
+        isCorrect: answers[index] === q.correctIndex
+      }))
     },
   });
 });

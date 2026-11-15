@@ -18,9 +18,24 @@
     .option-label:hover { background: var(--bg-3); border-color: var(--glass-hi); }
     .option-label input { display: none; }
     .option-label.selected { border-color: var(--accent); background: rgba(34, 211, 238, 0.1); }
-    .score-banner { text-align: center; padding: 3rem 1rem; margin-top: 2rem; background: linear-gradient(135deg, rgba(52, 211, 153, 0.1), rgba(34, 211, 238, 0.1)); border: 1px solid var(--success); border-radius: var(--radius-lg); animation: fadeInUp 600ms ease both; }
+    
+    .score-banner { text-align: center; padding: 3rem 1rem; margin-top: 2rem; margin-bottom: 2rem; background: linear-gradient(135deg, rgba(52, 211, 153, 0.1), rgba(34, 211, 238, 0.1)); border: 1px solid var(--success); border-radius: var(--radius-lg); animation: fadeInUp 600ms ease both; }
     .score-banner h2 { font-size: 3rem; color: var(--success); margin-bottom: 0.5rem; }
     .score-banner p { color: var(--text-1); font-size: 1.1rem; margin-bottom: 1.5rem; }
+
+    /* Review Section Styles */
+    .review-item { margin-bottom: 1.5rem; padding: 1.5rem; background: var(--bg-2); border-radius: var(--radius-sm); border: 1px solid var(--glass-border); }
+    .review-question { font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem; line-height: 1.4; }
+    .review-options { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+    .review-option { padding: 0.75rem 1rem; border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; }
+    
+    /* Correct / Incorrect States */
+    .review-option.correct { background: rgba(52, 211, 153, 0.1); border-color: rgba(52, 211, 153, 0.3); color: var(--success); }
+    .review-option.incorrect { background: rgba(248, 113, 113, 0.1); border-color: rgba(248, 113, 113, 0.3); color: var(--danger); }
+    .review-option.neutral { background: rgba(255, 255, 255, 0.02); color: var(--text-2); }
+    
+    .explanation-box { padding: 1rem; background: rgba(34, 211, 238, 0.05); border-left: 4px solid var(--accent); border-radius: 4px; font-size: 0.95rem; color: var(--text-1); margin-top: 1rem; }
+    
     .loading-state { text-align: center; padding: 4rem 0; }
     .loading-state .loader { width: 40px; height: 40px; border-width: 3px; margin-bottom: 1rem; }
   </style>
@@ -87,6 +102,11 @@
         <p id="scoreText">You scored 0 out of 0</p>
         <button class="btn btn-primary" onclick="window.location.reload()">Take another quiz</button>
       </div>
+      
+      <div class="quiz-header">
+        <h2 style="font-size: 1.5rem;">Review your answers</h2>
+      </div>
+      <div id="reviewContainer"></div>
     </div>
   </main>
 
@@ -102,6 +122,7 @@
     const loading = document.getElementById('loading');
     const setupView = document.getElementById('setupView');
     const questionsContainer = document.getElementById('questionsContainer');
+    const reviewContainer = document.getElementById('reviewContainer');
 
     quizForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -153,10 +174,39 @@
 
       try {
         const response = await api.patch(`/api/progress/quiz/${currentQuizId}/submit`, { answers });
+        
         quizView.classList.add('hidden');
         resultView.classList.remove('hidden');
+        
+        // Populate score banner
         document.getElementById('scorePercent').textContent = response.data.percentage + '%';
         document.getElementById('scoreText').textContent = `You scored ${response.data.score} out of ${response.data.totalQuestions}`;
+
+        // Populate Review Section
+        reviewContainer.innerHTML = response.data.review.map((item, i) => `
+          <div class="card card-pad review-item" style="animation: fadeInUp 500ms ease both; animation-delay: ${i * 100}ms;">
+            <div class="review-question">${i + 1}. ${item.question}</div>
+            <div class="review-options">
+              ${item.options.map((opt, oi) => {
+                let className = 'neutral';
+                let icon = '';
+                if (oi === item.correctIndex) {
+                  className = 'correct';
+                  icon = ' <span>✓</span>';
+                } else if (oi === item.userAnswer && oi !== item.correctIndex) {
+                  className = 'incorrect';
+                  icon = ' <span>✗</span>';
+                }
+                return `<div class="review-option ${className}"><span>${opt}</span>${icon}</div>`;
+              }).join('')}
+            </div>
+            <div class="explanation-box">
+              <strong>Explanation:</strong> ${item.explanation}
+            </div>
+          </div>
+        `).join('');
+
+        resultView.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } catch (err) {
         alert(err.message);
         document.getElementById('finishBtn').disabled = false;
